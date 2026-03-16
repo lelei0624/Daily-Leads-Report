@@ -6,7 +6,7 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-from src.config import LOG_PATH
+from config import LOG_PATH
 
 
 def get_logger(name: str = "leads_pipeline") -> logging.Logger:
