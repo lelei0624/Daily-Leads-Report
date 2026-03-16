@@ -51,7 +51,6 @@ QUALIFIED_VALUES = {"yes", "true", "1"}
 # ── Targets ────────────────────────────────────────────────────────────────
 TARGETS_GSHEET_CSV_URL = os.getenv("TARGETS_GSHEET_CSV_URL", "").strip()
 
-# Optional fallback if sheet is unavailable
 FALLBACK_TARGETS = {
     "daily": {
         "MKT Inbound": 8,
@@ -77,13 +76,12 @@ FALLBACK_TARGETS = {
 GOOGLE_CHAT_WEBHOOK_URL = os.environ["GOOGLE_CHAT_WEBHOOK_URL"]
 
 # ── Paths ──────────────────────────────────────────────────────────────────
-SRC_DIR = os.path.dirname(__file__)
-PROJECT_ROOT = os.path.dirname(SRC_DIR)
+PROJECT_ROOT = os.path.dirname(__file__)
 
 TEMPLATE_PATH = os.path.join(PROJECT_ROOT, "templates", "dashboard.html.j2")
-OUTPUT_HTML = os.path.join(PROJECT_ROOT, "output", "dashboard.html")
-OUTPUT_PNG = os.path.join(PROJECT_ROOT, "output", "dashboard.png")
-LOG_PATH = os.path.join(PROJECT_ROOT, "logs", "pipeline.log")
+OUTPUT_HTML   = "/tmp/dashboard.html"
+OUTPUT_PNG    = "/tmp/dashboard.png"
+LOG_PATH      = os.path.join(PROJECT_ROOT, "logs", "pipeline.log")
 
 # ── Timezone ───────────────────────────────────────────────────────────────
 TIMEZONE = os.getenv("TIMEZONE", "Asia/Manila")
