@@ -1,8 +1,5 @@
 """
 notifier.py — Sends the daily dashboard to a Google Chat space.
-
-Google Chat incoming webhooks accept JSON payloads with text and/or cards.
-Images must be hosted at a publicly accessible URL.
 """
 
 import json
@@ -10,17 +7,17 @@ from datetime import datetime
 
 import requests
 
-from src.config import GOOGLE_CHAT_WEBHOOK_URL
-from src.logger import get_logger
+from config import GOOGLE_CHAT_WEBHOOK_URL
+from logger import get_logger
 
 log = get_logger("notifier")
 
 
 def _build_text_payload(metrics: dict) -> dict:
-    date = metrics.get("report_date", "")
+    date  = metrics.get("report_date", "")
     label = metrics.get("report_label", "Reported Period")
     qualified = metrics.get("qualified_today", 0)
-    rate = metrics.get("ql_rate_today", 0)
+    rate  = metrics.get("ql_rate_today", 0)
 
     text = (
         f"📊 *Daily Leads Report — {date}*\n\n"
@@ -32,10 +29,10 @@ def _build_text_payload(metrics: dict) -> dict:
 
 
 def _build_card_payload(metrics: dict, image_url: str) -> dict:
-    date = metrics.get("report_date", "")
+    date  = metrics.get("report_date", "")
     label = metrics.get("report_label", "Reported Period")
     qualified = metrics.get("qualified_today", 0)
-    rate = metrics.get("ql_rate_today", 0)
+    rate  = metrics.get("ql_rate_today", 0)
 
     return {
         "cardsV2": [
@@ -91,22 +88,6 @@ def _kpi_widget(label: str, value: str) -> dict:
             }
         ]
     }
-
-
-def upload_to_gcs(png_path: str, bucket: str, blob_name: str = None) -> str:
-    from google.cloud import storage  # type: ignore
-
-    client = storage.Client()
-    bucket_ref = client.bucket(bucket)
-    blob_name = blob_name or f"leads/dashboard_{datetime.now().strftime('%Y%m%d')}.png"
-    blob = bucket_ref.blob(blob_name)
-
-    blob.upload_from_filename(png_path, content_type="image/png")
-    blob.make_public()
-
-    url = blob.public_url
-    log.info("Uploaded to GCS: %s", url)
-    return url
 
 
 def send_to_chat(metrics: dict, image_url: str = None) -> None:
