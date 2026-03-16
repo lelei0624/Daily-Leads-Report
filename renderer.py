@@ -1,5 +1,5 @@
 """
-renderer.py — Renders the HTML dashboard to a PNG screenshot using Playwright.
+renderer.py — Renders the HTML dashboard from a Jinja2 template.
 """
 
 import json
@@ -8,15 +8,15 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.config import OUTPUT_HTML, OUTPUT_PNG, TEMPLATE_PATH
-from src.logger import get_logger
+from config import OUTPUT_HTML, OUTPUT_PNG, TEMPLATE_PATH
+from logger import get_logger
 
 log = get_logger("renderer")
 
 
 def render_html(context: dict) -> str:
     """Fill the Jinja2 template and write it to OUTPUT_HTML."""
-    template_dir = os.path.dirname(TEMPLATE_PATH)
+    template_dir  = os.path.dirname(TEMPLATE_PATH)
     template_file = os.path.basename(TEMPLATE_PATH)
 
     if not os.path.exists(TEMPLATE_PATH):
@@ -43,9 +43,7 @@ def render_html(context: dict) -> str:
 
 
 def render_png(html_path: str = OUTPUT_HTML, png_path: str = OUTPUT_PNG) -> str:
-    """
-    Use Playwright (headless Chromium) to screenshot the dashboard.
-    """
+    """Use Playwright (headless Chromium) to screenshot the dashboard."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError as exc:
