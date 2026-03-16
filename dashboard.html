@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Daily Leads Report — March 16, 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:       #0a0e1a;
+    --surface:  #111827;
+    --surface2: #1a2235;
+    --border:   #1e2d45;
+    --accent1:  #00e5ff;
+    --accent2:  #7c3aed;
+    --accent3:  #f59e0b;
+    --accent4:  #10b981;
+    --red:      #f43f5e;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --font-mono: 'Space Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    min-width: 1280px;
+    padding: 32px;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--accent1);
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  .header-date {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* ── KPI cards ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .kpi-card.k1::before { background: var(--accent1); }
+  .kpi-card.k2::before { background: var(--accent2); }
+  .kpi-card.k3::before { background: var(--accent3); }
+  .kpi-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-family: var(--font-mono);
+  }
+  .kpi-value {
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: #fff;
+  }
+  .kpi-card.k1 .kpi-value { color: var(--accent1); }
+  .kpi-card.k2 .kpi-value { color: var(--accent2); }
+  .kpi-card.k3 .kpi-value { color: var(--accent3); }
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+
+  /* ── Charts row ── */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .chart-card h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .chart-wrap { height: 200px; position: relative; }
+
+  /* ── Rolling 3 months ── */
+  .rolling-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .rolling-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .rolling-card h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    font-family: var(--font-mono);
+  }
+  .seg-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .seg-row:last-child { border-bottom: none; }
+  .seg-name { color: var(--muted); }
+  .seg-val  { font-weight: 700; color: #fff; font-family: var(--font-mono); }
+  .seg-row.total-row .seg-name { color: var(--text); }
+  .seg-row.total-row .seg-val  { color: var(--accent1); }
+
+  /* ── Tables area ── */
+  .tables-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    overflow: hidden;
+  }
+  .table-card h3 {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  thead th {
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 7px 8px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  thead th:first-child { text-align: left; }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; background: var(--surface2); }
+  tbody td {
+    padding: 7px 8px;
+    color: var(--text);
+    text-align: right;
+    font-family: var(--font-mono);
+  }
+  tbody td:first-child {
+    text-align: left;
+    font-family: var(--font-sans);
+    color: var(--muted);
+  }
+  tbody tr:last-child td { color: var(--accent1); font-weight: 700; }
+  tbody tr:last-child td:first-child { color: var(--text); font-family: var(--font-mono); }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <div class="header-title">Automated Intelligence • Sales Operations</div>
+    <h1>Daily Leads Report</h1>
+  </div>
+  <div class="header-date">
+    <div>March 16, 2026</div>
+    <div style="margin-top:4px;font-size:10px;">PH Pipelines · All Segments</div>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi-card k1">
+    <div class="kpi-label">Total Leads Today</div>
+    <div class="kpi-value">21</div>
+    <div class="kpi-sub">Across all 3 pipelines</div>
+  </div>
+  <div class="kpi-card k2">
+    <div class="kpi-label">Qualified Leads Today</div>
+    <div class="kpi-value">16</div>
+    <div class="kpi-sub">count_as_qualified = Yes</div>
+  </div>
+  <div class="kpi-card k3">
+    <div class="kpi-label">Qualified Lead Rate</div>
+    <div class="kpi-value">76.2%</div>
+    <div class="kpi-sub">QL / Total Leads</div>
+  </div>
+</div>
+
+<!-- Trend Charts -->
+<div class="section-label">14-Day Trends</div>
+<div class="charts-row">
+  <div class="chart-card">
+    <h3>Qualified Lead Trend · Last 14 Days</h3>
+    <div class="chart-wrap"><canvas id="qlTrend"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>QL by Department Source · Last 14 Days</h3>
+    <div class="chart-wrap"><canvas id="deptTrend"></canvas></div>
+  </div>
+</div>
+
+<!-- Rolling 3 Months -->
+<div class="section-label">Rolling 3 Months — New Business Qualified Leads</div>
+<div class="rolling-grid">
+  
+  <div class="rolling-card">
+    <h4>Jan 2026</h4>
+    
+    <div class="seg-row ">
+      <span class="seg-name">MICRO</span>
+      <span class="seg-val">62</span>
+    </div>
+    
+    <div class="seg-row ">
+      <span class="seg-name">SME</span>
+      <span class="seg-val">234</span>
+    </div>
+    
+    <div class="seg-row ">
+      <span class="seg-name">ENT</span>
+      <span class="seg-val">38</span>
+    </div>
+    
+    <div class="seg-row total-row">
+      <span class="seg-name">TOTAL</span>
+      <span class="seg-val">335</span>
+    </div>
+    
+  </div>
+  
+  <div class="rolling-card">
+    <h4>Feb 2026</h4>
+    
+    <div class="seg-row ">
+      <span class="seg-name">MICRO</span>
+      <span class="seg-val">65</span>
+    </div>
+    
+    <div class="seg-row ">
+      <span class="seg-name">SME</span>
+      <span class="seg-val">199</span>
+    </div>
+    
+    <div class="seg-row ">
+      <span class="seg-name">ENT</span>
+      <span class="seg-val">35</span>
+    </div>
+    
+    <div class="seg-row total-row">
+      <span class="seg-name">TOTAL</span>
+      <span class="seg-val">299</span>
+    </div>
+    
+  </div>
+  
+  <div class="rolling-card">
+    <h4>Mar 2026</h4>
+    
+    <div class="seg-row ">
+      <span class="seg-name">MICRO</span>
+      <span class="seg-val">19</span>
+    </div>
+    
+    <div class="seg-row ">
+      <span class="seg-name">SME</span>
+      <span class="seg-val">100</span>
+    </div>
+    
+    <div class="seg-row ">
+      <span class="seg-name">ENT</span>
+      <span class="seg-val">22</span>
+    </div>
+    
+    <div class="seg-row total-row">
+      <span class="seg-name">TOTAL</span>
+      <span class="seg-val">141</span>
+    </div>
+    
+  </div>
+  
+</div>
+
+<!-- New Business Tables -->
+<div class="section-label">New Business Breakdown</div>
+<div class="tables-row">
+
+  
+
+  
+  <div class="table-card">
+    <h3>Daily</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Dept Source</th>
+          <th>MICRO</th><th>SME</th><th>ENT</th><th>TOTAL</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>MKT Inbound</td>
+          <td>2</td><td>4</td><td>2</td><td>8</td>
+        </tr>
+        
+        <tr>
+          <td>LDU Outbound</td>
+          <td>1</td><td>6</td><td>1</td><td>8</td>
+        </tr>
+        
+        <tr>
+          <td>Channels</td>
+          <td>0</td><td>0</td><td>0</td><td>0</td>
+        </tr>
+        
+        <tr>
+          <td>Sales Outbound</td>
+          <td>0</td><td>0</td><td>0</td><td>0</td>
+        </tr>
+        
+        <tr>
+          <td>Total</td>
+          <td>3</td><td>10</td><td>3</td><td>16</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="table-card">
+    <h3>Month-to-Date</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Dept Source</th>
+          <th>MICRO</th><th>SME</th><th>ENT</th><th>TOTAL</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>MKT Inbound</td>
+          <td>16</td><td>46</td><td>10</td><td>72</td>
+        </tr>
+        
+        <tr>
+          <td>LDU Outbound</td>
+          <td>2</td><td>49</td><td>12</td><td>63</td>
+        </tr>
+        
+        <tr>
+          <td>Channels</td>
+          <td>0</td><td>1</td><td>0</td><td>1</td>
+        </tr>
+        
+        <tr>
+          <td>Sales Outbound</td>
+          <td>1</td><td>4</td><td>0</td><td>5</td>
+        </tr>
+        
+        <tr>
+          <td>Total</td>
+          <td>19</td><td>100</td><td>22</td><td>141</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="table-card">
+    <h3>Quarter-to-Date</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Dept Source</th>
+          <th>MICRO</th><th>SME</th><th>ENT</th><th>TOTAL</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>MKT Inbound</td>
+          <td>113</td><td>270</td><td>51</td><td>434</td>
+        </tr>
+        
+        <tr>
+          <td>LDU Outbound</td>
+          <td>22</td><td>211</td><td>39</td><td>272</td>
+        </tr>
+        
+        <tr>
+          <td>Channels</td>
+          <td>0</td><td>11</td><td>3</td><td>14</td>
+        </tr>
+        
+        <tr>
+          <td>Sales Outbound</td>
+          <td>11</td><td>41</td><td>2</td><td>55</td>
+        </tr>
+        
+        <tr>
+          <td>Total</td>
+          <td>146</td><td>533</td><td>95</td><td>775</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+</div>
+
+<div class="footer">Generated automatically · March 16, 2026 · PH Sales Operations</div>
+
+<script>
+const LABELS   = ["Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16"];
+const QL_DATA  = [17, 6, 13, 14, 1, 0, 13, 10, 7, 19, 11, 1, 0, 16];
+const TOT_DATA = [21, 16, 21, 19, 1, 0, 22, 19, 10, 29, 17, 1, 0, 21];
+
+const DEPT_SOURCES = ["MKT Inbound", "LDU Outbound", "Channels", "Sales Outbound"];
+const DEPT_DATA    = {"Channels": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "LDU Outbound": [8, 2, 3, 5, 0, 0, 8, 4, 4, 9, 5, 0, 0, 8], "MKT Inbound": [9, 4, 8, 8, 1, 0, 3, 5, 3, 10, 6, 1, 0, 8], "Sales Outbound": [0, 0, 1, 1, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0]};
+
+const COLORS = ['#00e5ff','#7c3aed','#f59e0b','#10b981'];
+
+const gridOpts = {
+  color: 'rgba(30,45,69,0.8)',
+};
+const tickOpts = {
+  color: '#64748b',
+  font: { family: "'Space Mono', monospace", size: 9 },
+};
+const baseOpts = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { grid: gridOpts, ticks: { ...tickOpts, maxRotation: 45, minRotation: 45 } },
+    y: { grid: gridOpts, ticks: tickOpts, beginAtZero: true },
+  },
+};
+
+// Chart 1: QL Trend
+new Chart(document.getElementById('qlTrend'), {
+  type: 'bar',
+  data: {
+    labels: LABELS,
+    datasets: [
+      {
+        label: 'Total Leads',
+        data: TOT_DATA,
+        backgroundColor: 'rgba(100,116,139,0.3)',
+        borderRadius: 3,
+        order: 2,
+      },
+      {
+        label: 'Qualified',
+        data: QL_DATA,
+        type: 'line',
+        borderColor: '#00e5ff',
+        backgroundColor: 'rgba(0,229,255,0.08)',
+        pointBackgroundColor: '#00e5ff',
+        pointRadius: 3,
+        tension: 0.35,
+        fill: true,
+        order: 1,
+      },
+    ],
+  },
+  options: {
+    ...baseOpts,
+    plugins: {
+      legend: {
+        display: true,
+        labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 12 },
+      },
+    },
+  },
+});
+
+// Chart 2: Dept trend
+new Chart(document.getElementById('deptTrend'), {
+  type: 'line',
+  data: {
+    labels: LABELS,
+    datasets: DEPT_SOURCES.map((dept, i) => ({
+      label: dept,
+      data: DEPT_DATA[dept],
+      borderColor: COLORS[i],
+      backgroundColor: COLORS[i] + '18',
+      pointBackgroundColor: COLORS[i],
+      pointRadius: 2,
+      tension: 0.35,
+      fill: false,
+    })),
+  },
+  options: {
+    ...baseOpts,
+    plugins: {
+      legend: {
+        display: true,
+        labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10 },
+      },
+    },
+  },
+});
+</script>
+</body>
+</html>
