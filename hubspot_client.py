@@ -1,11 +1,5 @@
 """
 hubspot_client.py — Pulls deal data from HubSpot using the v3 Search API.
-
-Strategy
---------
-* Uses POST /crm/v3/objects/deals/search with filter groups so we only
-  page through deals in the target pipelines.
-* Returns raw list[dict] — transformation happens in data_processor.py.
 """
 
 import time
@@ -13,8 +7,8 @@ from typing import Any
 
 import requests
 
-from src.config import HUBSPOT_API_KEY, TARGET_PIPELINES, DEAL_PROPERTIES
-from src.logger import get_logger
+from config import HUBSPOT_API_KEY, TARGET_PIPELINES, DEAL_PROPERTIES
+from logger import get_logger
 
 log = get_logger("hubspot_client")
 
@@ -30,7 +24,6 @@ START_DATE = "1735689600000"  # 2025-01-01 00:00:00 UTC in milliseconds
 
 
 def _build_payload(after: str | None = None) -> dict[str, Any]:
-    """Build the search request body for target pipelines from 2025 onwards."""
     filter_groups = [
         {
             "filters": [
@@ -63,10 +56,6 @@ def _build_payload(after: str | None = None) -> dict[str, Any]:
 
 
 def fetch_all_deals() -> list[dict]:
-    """
-    Page through HubSpot search results and return every deal that matches
-    the target pipelines from 2025 onwards.
-    """
     all_deals: list[dict] = []
     after: str | None = None
     page = 0
@@ -74,7 +63,6 @@ def fetch_all_deals() -> list[dict]:
     while page < MAX_PAGES:
         payload = _build_payload(after)
         log.debug("Fetching page %d (after=%s)", page + 1, after)
-        log.debug("Payload: %s", payload)
 
         try:
             resp = requests.post(
